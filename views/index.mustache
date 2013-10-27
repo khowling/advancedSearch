@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<!--[if IE 8]> 				 
+<html class="no-js lt-ie9" lang="en" > 
+<![endif]-->
+<!--[if gt IE 8]><!--> 
+<html class="no-js" lang="en" > 
+<!--<![endif]-->
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Foundation 4</title>
+
+  
+  <link rel="stylesheet" href="css/foundation.css">
+  <script src="js/vendor/custom.modernizr.js"></script>
+
+  <script type="text/javascript" src="https://emea.salesforce.com/canvas/sdk/js/29.0/canvas-all.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular-resource.js"></script>
+</head>
+<body ng-app="ngResource">
+
+   <script>
+   		/*  load the 'ngResource' module in your application by adding it as a dependent module 
+   		 *  ngResource INCLUDED IN THE BOOTSTRAP INSTREAD 
+   		angular.module('app', ['ngResource']);
+   		*/
+   		
+   		function searchCtrl( $resource, $scope) {
+   			/* Initialisation */
+	   		$scope.Search = $resource('/account/:accId', {accId:'@id'}, 
+	   			{'saveall':  {method:'POST', isArray:true}});
+			$scope.showerror = false; 
+			
+			/* data/action bindings */
+			$scope.search = function (s) {
+				var res = $scope.Search.query({str: s.txt}, 
+					function (value, responseHeaders){
+						console.log('Search Success : ' + JSON.stringify( value)) ;  
+						// $scope.results = value.response.docs;
+						$scope.results = value[1].docs;
+					}, 
+					function (httpResponse) {
+					 	$scope.errorStr = 'Error ' + JSON.stringify( httpResponse);
+					 	$scope.showerror = true;
+					 	alert ($scope.errorStr);
+					 } );
+			}
+			
+			/* data/action bindings */
+			$scope.add = function (s) {
+				$scope.Search.saveall(s, 
+								function (value, responseHeaders){
+							console.log ('Add success : ' + JSON.stringify( value)) ;
+						
+						}, 
+									  function (httpResponse) {
+						 	$scope.errorStr = 'Error ' + JSON.stringify( httpResponse);
+						 	$scope.showerror = true;
+						 	alert ($scope.errorStr);
+					 	} );
+
+			}
+		
+		
+			// Paste the signed request string into a JavaScript object for easy access.
+			var sr = JSON.parse('{{{ signedreq }}}');
+			// Reference the Chatter user's URL from Context.Links object.
+			var chatterUsersUrl = sr.context.links.queryUrl + '?q=SELECT+id,name,type,billingstate,phone+from+Account';
+			console.log (chatterUsersUrl);
+			$scope.getSFDCAccs = function() {
+				// Make an XHR call back to salesforce through the supplied browser proxy. 
+				Sfdc.canvas.client.ajax(chatterUsersUrl, 
+				    {client : sr.client,
+				    success : function(data){
+				    // Make sure the status code is OK.
+				    if (data.status === 200) {
+				        
+				        console.log ("Updating  "  + data.payload.totalSize + 
+				        " Accounts into Solr"); // Returned 2 users
+				        
+				        var pushtosolr = new Array();
+				        for (var i = 0; i < data.payload.totalSize; i++) {
+				        	var sfdcobj = data.payload.records[i];
+				        	console.log (JSON.stringify (sfdcobj));
+				        	var solrobj = {
+					        	'id': sfdcobj.Id,
+					        	'name' : sfdcobj.Name,
+					        	'type_s' : sfdcobj.type,
+					        	'billingstate_s': sfdcobj.BillingState,
+					        	'phone_s': sfdcobj.Phone};
+			        		pushtosolr.push (solrobj);
+				        }
+				        $scope.add(pushtosolr);
+				    }
+				}});
+			}
+		}
+   </script>
+
+	<div class="row">
+		<div class="large-8 columns">
+			<h2>Apache Solr / Salesforce Canvas App</h2>
+			<p>Push data from salesforce.com into Solr Collection running on heroku</p>
+			
+		</div>
+		<div class="large-4 columns">
+			<img src="http://lucene.apache.org/images/solr.png"/>
+			<a href="http://localhost:8983/solr/#/collection1">Manage Solr</a>
+		</div>
+		<hr />
+	</div>
+
+	<div class="row" ng-controller="searchCtrl">
+		<div class="large-8 columns">
+			<h3>1. Update Solr with Latest Accounts (this can be automated)</h3>
+			 <!-- BUTTON ROW -->
+			  <div class="row collapse">
+			  	<button ng-click="getSFDCAccs()">Update Solr</button>
+			  	<small ng-show="showerror" ng-class="error">{errorStr}</small>
+			  </div>
+
+			<h3>2. Search you data with the power of Solr</h3>
+			<!-- Grid Example -->
+			<div class="row" >
+				<div class="large-12 columns">
+					<form>
+					  <!-- SEARCH ROW -->
+					  <div class="row collapse">
+					    <div class="small-3 large-2 columns">
+					      <span class="prefix">search object</span>
+					    </div>
+					    <div class="small-9 large-10 columns">
+					      <input type="text" ng-model="search.txt" placeholder="Enter your Json...">
+					    </div>
+					  </div>
+					  
+					  <!-- BUTTON ROW -->
+					  <div class="row collapse">
+					  	<button ng-click="search(search)">Search</button>
+					  	<small ng-show="showerror" ng-class="error">{errorStr}</small>
+					  </div>
+					</form>
+				</div>
+				<div class="large-12 columns">
+					<table>
+					  <thead>
+					    <tr>
+					      <th width="200">Name</th>
+					      <th>Type</th>
+					      <th width="150">Phone_s</th>
+					      <th width="150">Billing State</th>
+					    </tr>
+					  </thead>
+					  <tbody>
+					    <tr ng-repeat="o1 in results">
+					    
+					      <td><a ng-href="{{o1.id}}">{{o1.name}}</a></td>
+					      <td>{{o1.type_s}}</td>
+					      <td>{{o1.phone_s}}</td>
+					      <td>{{o1.billingstate_s}}</td>
+					    </tr>
+					  </tbody>
+					</table>
+				</div>
+			</div>
+			
+			<h3>Add data from any other systems</h3>
+			<!-- Grid Example -->
+			<div class="row">
+				<div class="large-12 columns">
+					<form>					  
+					  <!-- ADD ROW -->
+					  <div class="row">
+					    <div class="large-4 columns">
+					      <div class="row collapse">
+					        <div class="small-10 columns">
+					          <input type="text" ng-model="acc.id" placeholder="Account Unique ID">
+					        </div>
+					        <div class="small-2 columns">
+					          <span class="prefix">Id</a>
+					        </div>
+					      </div>
+					    </div>
+					    <div class="large-4 columns">
+					      <div class="row collapse">
+					        <div class="small-10 columns">
+					          <input type="text" ng-model="acc.name" placeholder="Account Name">
+					        </div>
+					        <div class="small-2 columns">
+					          <span class="prefix">Name</a>
+					        </div>
+					      </div>
+					    </div>
+					    <div class="large-4 columns">
+					      <div class="row collapse">
+					        <div class="small-9 columns">
+					          <input type="text" ng-model="acc.billingstate_s" placeholder="Account Address">
+					        </div>
+					        <div class="small-3 columns">
+					          <span class="postfix radius">Address</span>
+					        </div>
+					      </div>
+					    </div>
+					  </div>
+					  
+					  <!-- BUTTON ROW -->
+					  <div class="row collapse">
+					  	<button ng-click="add(acc)">Add</button>
+					  	
+					  	<small ng-show="showerror" ng-class="error">{errorStr}</small>
+					  </div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+
+  <script>
+  document.write('<script src=' +
+  ('__proto__' in {} ? 'js/vendor/zepto' : 'js/vendor/jquery') +
+  '.js><\/script>')
+  </script>
+  
+  <script src="js/foundation.min.js"></script>  
+  <script src="js/foundation/foundation.js"></script>
+  <script src="js/foundation/foundation.alerts.js"></script>
+  <script src="js/foundation/foundation.clearing.js"></script>
+  <script src="js/foundation/foundation.cookie.js"></script>
+  <script src="js/foundation/foundation.dropdown.js"></script>
+  <script src="js/foundation/foundation.forms.js"></script>
+  <script src="js/foundation/foundation.joyride.js"></script>
+  <script src="js/foundation/foundation.magellan.js"></script>
+  <script src="js/foundation/foundation.orbit.js"></script>
+  <script src="js/foundation/foundation.reveal.js"></script>
+  <script src="js/foundation/foundation.section.js"></script>
+  <script src="js/foundation/foundation.tooltips.js"></script>
+  <script src="js/foundation/foundation.topbar.js"></script>
+  <script src="js/foundation/foundation.interchange.js"></script>
+  <script src="js/foundation/foundation.placeholder.js"></script>
+  <script src="js/foundation/foundation.abide.js"></script>  
+  <script>
+    $(document).foundation();
+  </script>
+</body>
+</html>
