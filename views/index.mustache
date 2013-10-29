@@ -212,37 +212,39 @@
 		
 		
 			// Paste the signed request string into a JavaScript object for easy access.
-			var sr = JSON.parse('{{{ signedreq }}}');
-			// Reference the Chatter user's URL from Context.Links object.
-			var chatterUsersUrl = sr.context.links.queryUrl + '?q=SELECT+id,name,type,billingstate,phone+from+Account';
-			console.log (chatterUsersUrl);
-			$scope.getSFDCAccs = function() {
-				// Make an XHR call back to salesforce through the supplied browser proxy. 
-				Sfdc.canvas.client.ajax(chatterUsersUrl, 
-				    {client : sr.client,
-				    success : function(data){
-				    // Make sure the status code is OK.
-				    if (data.status === 200) {
-				        
-				        console.log ("Updating  "  + data.payload.totalSize + 
-				        " Accounts into Solr"); // Returned 2 users
-				        
-				        var pushtosolr = new Array();
-				        for (var i = 0; i < data.payload.totalSize; i++) {
-				        	var sfdcobj = data.payload.records[i];
-				        	console.log (JSON.stringify (sfdcobj));
-				        	var solrobj = {
-					        	'id': sfdcobj.Id,
-					        	'name' : sfdcobj.Name,
-					        	'type_s' : sfdcobj.Type,
-					        	'billingstate_s': sfdcobj.BillingState,
-					        	'phone_s': sfdcobj.Phone};
-			        		pushtosolr.push (solrobj);
-				        }
-				        $scope.add(pushtosolr);
-				    }
-				}});
-			}
+			try {
+				var sr = JSON.parse('{{{ signedreq }}}');
+				// Reference the Chatter user's URL from Context.Links object.
+				var chatterUsersUrl = sr.context.links.queryUrl + '?q=SELECT+id,name,type,billingstate,phone+from+Account';
+				console.log (chatterUsersUrl);
+				$scope.getSFDCAccs = function() {
+					// Make an XHR call back to salesforce through the supplied browser proxy. 
+					Sfdc.canvas.client.ajax(chatterUsersUrl, 
+					    {client : sr.client,
+					    success : function(data){
+					    // Make sure the status code is OK.
+					    if (data.status === 200) {
+					        
+					        console.log ("Updating  "  + data.payload.totalSize + 
+					        " Accounts into Solr"); // Returned 2 users
+					        
+					        var pushtosolr = new Array();
+					        for (var i = 0; i < data.payload.totalSize; i++) {
+					        	var sfdcobj = data.payload.records[i];
+					        	console.log (JSON.stringify (sfdcobj));
+					        	var solrobj = {
+						        	'id': sfdcobj.Id,
+						        	'name' : sfdcobj.Name,
+						        	'type_s' : sfdcobj.Type,
+						        	'billingstate_s': sfdcobj.BillingState,
+						        	'phone_s': sfdcobj.Phone};
+				        		pushtosolr.push (solrobj);
+					        }
+					        $scope.add(pushtosolr);
+					    }
+					}});
+				}
+			} catch (e) { alert ('no Signed Request'); }
 		}
    </script>
 </body>

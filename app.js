@@ -26,6 +26,9 @@ var CONSUMER_KEY = '3MVG9WtWSKUDG.x6WMNJldcfvliE8Ao0hpskU1Y6yOENaG2dtR0T95DNf95z
 var CONSUMER_SECRET = '1855091661054026942';
 
 app.post('/', function(req, res){
+	
+  console.log ('got the post from salesforce');
+
   var sreq = req.body.signed_request;
 	// console.log (sreq);
 
