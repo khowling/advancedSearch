@@ -1,7 +1,15 @@
 
-var express = require('express');
-var crypto = require('crypto');
-var solr = require('solr-client');
+var express = require('express'),
+	crypto = require('crypto'),
+	solr = require('solr-client'),
+	url = require ('url'),
+	solr_url = url.parse(process.env.WEBSOLR_URL),
+    client = solr.createClient({
+        path: solr_url.pathname,
+        host: solr_url.hostname,
+        port: parseInt(solr_url.port)
+    });
+
 
 var app = express();
 
@@ -12,7 +20,8 @@ var app = express();
 @param{ String }[path='/solr']- root path of all requests
 
 */
-var client = solr.createClient();
+/* var client = solr.createClient({host:'index.websolr.com', port: '80', path:'/solr/2f7092f7f1d'});  */
+
 client.autoCommit = true;
 
 app.set('views', __dirname + '/views'); 
@@ -67,7 +76,7 @@ app.get('/account', function(req, res){
 	
 	var query = client.createQuery()
 		.q(req.query.str)
-		.fl(['name', 'id', 'type_s','phone_s','billingstate_s']);
+		.fl(['id','name','type_s','phone_s','billingstate_s']);
 	
 	client.search(query,function(err,obj){
 		if(err){
@@ -80,27 +89,29 @@ app.get('/account', function(req, res){
 });
 app.post('/account/:id', function(req, res){
 	var acc = req.body;
-	console.log ('body : ' + JSON.stringify(acc));
+	console.log ('Saving Document : ' + JSON.stringify(acc));
 	client.add(acc, function(err,obj) {
 		if(err){
 			res.send(500, { error: 'something blew up' + err});
 		}else{
+			console.log ('Saving Document Success : ' + JSON.stringify(obj));
 			res.send(200);
 		}
-	})
+	});
 	
 });
 
 app.post('/account', function(req, res){
 	var accs = req.body;
-	console.log ('body : ' + JSON.stringify(accs));
+	console.log ('Saving Documents : ' + JSON.stringify(accs));
 	client.add(accs, function(err,obj) {
 		if(err){
 			res.send(500, { error: 'something blew up' + err});
 		}else{
+			console.log ('Saving Documents Success : ' + JSON.stringify(obj));
 			res.send(200);
 		}
-	})
+	});
 	
 });
 

@@ -1,0 +1,53 @@
+
+<schema name="example" version="1.0">
+  <types>
+
+    <fieldType name="string" class="solr.StrField" omitNorms="true"/>
+    <fieldType name="tdouble" class="solr.TrieDoubleField" omitNorms="true"/>
+    <fieldType name="rand" class="solr.RandomSortField" omitNorms="true"/>
+    <!-- *** This fieldType is used by Sunspot! *** -->
+    <fieldType name="text" class="solr.TextField" omitNorms="false">
+      <analyzer>
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.StandardFilterFactory"/>
+        <filter class="solr.LowerCaseFilterFactory"/>
+      </analyzer>
+    </fieldType>
+    <fieldType name="boolean" class="solr.BoolField" omitNorms="true"/>
+    <fieldType name="date" class="solr.DateField" omitNorms="true"/>
+    <fieldType name="sdouble" class="solr.SortableDoubleField" omitNorms="true"/>
+    <fieldType name="sfloat" class="solr.SortableFloatField" omitNorms="true"/>
+    <fieldType name="sint" class="solr.SortableIntField" omitNorms="true"/>
+    <fieldType name="slong" class="solr.SortableLongField" omitNorms="true"/>
+    <fieldType name="tint" class="solr.TrieIntField" omitNorms="true"/>
+    <fieldType name="tfloat" class="solr.TrieFloatField" omitNorms="true"/>
+    <fieldType name="tdate" class="solr.TrieDateField" omitNorms="true"/>
+  </types>
+
+  <fields>
+
+
+    <field name="id" stored="true" type="string" multiValued="false" indexed="true" required="true" />
+    <field name="name"  type="string" multiValued="false"  indexed="true"  stored="true"/>
+    <field name="type_s"  type="string" multiValued="false"  indexed="true"  stored="true"/>
+    <field name="phone_s"  type="string" multiValued="false"  indexed="true"  stored="true"/>
+    <field name="billingstate_s"  type="string" multiValued="false"  indexed="true"  stored="true"/>
+	
+
+    <field name="class_name" stored="false" type="string" multiValued="false" indexed="true"/>
+    <field name="text" stored="false" type="string" multiValued="true" indexed="true"/>
+    <field name="lat" stored="true" type="tdouble" multiValued="false" indexed="true"/>
+    <field name="lng" stored="true" type="tdouble" multiValued="false" indexed="true"/>
+
+  </fields>
+
+  <uniqueKey>id</uniqueKey>
+
+  <!-- field for the QueryParser to use when an explicit fieldname is absent -->
+
+  <defaultSearchField>name</defaultSearchField>
+
+  <!-- SolrQueryParser configuration: defaultOperator="AND|OR" -->
+  <solrQueryParser defaultOperator="AND"/>
+
+</schema>
