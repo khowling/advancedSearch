@@ -3,12 +3,17 @@ var express = require('express'),
 	crypto = require('crypto'),
 	solr = require('solr-client'),
 	url = require ('url'),
-	solr_url = url.parse(process.env.WEBSOLR_URL),
-    client = solr.createClient({
+	solr_url = url.parse(process.env.WEBSOLR_URL);
+
+
+var client_opts = {
         path: solr_url.pathname,
         host: solr_url.hostname,
-        port: parseInt(solr_url.port)
-    });
+        port: 80
+   };
+if (solr_url.port) client_opts.port = parseInt(solr_url.port);
+console.log ('client_opts :' + JSON.stringify(client_opts));
+client = solr.createClient(client_opts);
 
 
 var app = express();
