@@ -83,15 +83,24 @@ app.get('/go', function(req, res){
 
 app.get('/account', function(req, res){
 	var sstr = req.query.txt,
-	    rows = req.query.rows;
+	    rows = req.query.rows,
+	    filters = req.query.filters;
 	    
-	console.log ('searching for  : ' + sstr + ', rows : ' + rows);
+	console.log ('searching for  : ' + sstr + ', rows : ' + rows + ', filters : ' + JSON.stringify(filters));
 	
 	var query = client.createQuery()
 		.q(sstr)
 		.fl(['id','name','type_s','phone_s','billingstate_s'])
 		.facet({field: ['type_s']})
 		.rows(rows);
+	
+	if (filters != null) {
+		var filts = JSON.parse(filters);
+		for (var idx =0; idx < filts.length; idx++) {
+			console.log ('adding filter ' + filts[idx].field + ' : ' +  filts[idx].val);
+			query.matchFilter(filts[idx].field, filts[idx].val);
+		}
+	}
 	
 	client.search(query,function(err,obj){
 		if(err){

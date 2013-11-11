@@ -89,15 +89,18 @@
 			
 			<div class="panel" style="margin-top: 15px;">
 				
-				<!-- ***************** FACET RESULTS ***************-->
-		         <p style="margin-bottom:0;">Filter by</p>
-		        <a href="#">all results ({[{data.totalrecords}]})</a>
+				<!-- ***************** FILTERS SET ***************-->
+		        <p style="margin-bottom:0;">Filter by</p>
+		        
+		        <div ng-repeat="filt in setfilters"><a ng-click="rmFilter($index);  search(searchparam);">{[{filt.val}]}</a></div>
+		        <a >all results ({[{data.totalrecords}]})</a>
 
+				<!-- ***************** FACET RESULTS ***************-->
 		        <span ng-repeat="(key1, fr) in data.facetresults">
 			      <p style="margin-bottom:0;">{[{key1}]}</p>
 			        
 			        <ul class="side-nav" ng-repeat="fieldfr in fr" style="line-height:1; padding:0;">
-				        <li><a ng-click="search(searchparam, { field: key1, val: fieldfr});">{[{fieldfr}]} ({[{fr[$index+1]}]})</a></li>
+				        <li><a ng-click="addFilter( {field: key1, val: fieldfr}); search(searchparam);">{[{fieldfr}]} ({[{fr[$index+1]}]})</a></li>
 				    </ul>
 				    <hr/>
 				</span>
@@ -202,8 +205,18 @@
    		
    		function searchCtrl( $resource, $scope) {
    			var data = {};
+   			$scope.setfilters = [];
    			$scope.data = data;
    			$scope.selected = [];
+   			
+   			$scope.addFilter = function(rec1) {
+   				console.log ('addFilter ' + rec1);
+   				$scope.setfilters.push(rec1);
+   			}
+    		$scope.rmFilter = function(idx) {
+   				console.log ('rmFilter ' + idx);  			
+   				$scope.setfilters.splice( $scope.setfilters[idx] ,1);
+   			}
    			
    			$scope.addRecord = function(rec1) {
    				$scope.selected.push(rec1);
@@ -215,9 +228,13 @@
 			$scope.showerror = false; 
 			
 			/* data/action bindings */
-			$scope.search = function (s, f) {
+			$scope.search = function (s) {
+				if (s == null) s = {};
+				if (s.txt == null) s.txt = "*";
 				if (s.rows == null) s.rows = 50;
-				console.log ('searching for  ' + JSON.stringify(s) + ', facet: ' + JSON.stringify(f));
+				//if (f != null) s.filters = JSON.stringify(f);
+				s.filters = JSON.stringify($scope.setfilters);
+				console.log ('searching for  ' + JSON.stringify(s));
 				var res = $scope.Search.query(s, 
 					/*Success */
 					function (value, responseHeaders){
