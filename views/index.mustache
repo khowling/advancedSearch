@@ -90,17 +90,17 @@
 			<div class="panel" style="margin-top: 15px;">
 				
 				<!-- ***************** FILTERS SET ***************-->
-		        <p style="margin-bottom:0;">Filter by</p>
+		        <p style="margin-bottom:0;">Filter by:  ({[{data.totalrecords}]})</p>
 		        
-		        <div ng-repeat="filt in setfilters"><a ng-click="rmFilter($index);  search(searchparam);">{[{filt.val}]}</a></div>
-		        <a >all results ({[{data.totalrecords}]})</a>
+		        <div ng-repeat="filt in setfilters"><a class="label round alert" style="margin: 2px;" ng-click="rmFilter($index);  search(searchparam);">{[{filt.val}]}</a></div>
+		        
 
 				<!-- ***************** FACET RESULTS ***************-->
 		        <span ng-repeat="(key1, fr) in data.facetresults">
 			      <p style="margin-bottom:0;">{[{key1}]}</p>
-			        
-			        <ul class="side-nav" ng-repeat="fieldfr in fr" style="line-height:1; padding:0;">
-				        <li><a ng-click="addFilter( {field: key1, val: fieldfr}); search(searchparam);">{[{fieldfr}]} ({[{fr[$index+1]}]})</a></li>
+			        <style> .hide { display: none; }</style>
+			        <ul class="side-nav"  style="line-height:1; padding:0;">
+				        <li ng-repeat="fieldfr in fr" class="ng-class-even: 'hide'" ><a ng-click="addFilter( {field: key1, val: fieldfr}); search(searchparam);">{[{fieldfr}]} ({[{fr[$index+1]}]})</a></li>
 				    </ul>
 				    <hr/>
 				</span>
