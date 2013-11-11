@@ -39,6 +39,12 @@ app.use(express.bodyParser());
 var CONSUMER_KEY = '3MVG9WtWSKUDG.x6WMNJldcfvliE8Ao0hpskU1Y6yOENaG2dtR0T95DNf95zzgDK5co4qPZukkp0O2IhftVHU';
 var CONSUMER_SECRET = '1855091661054026942';
 
+// Commit your changes with `waitFlush` and `waitSearcher` options.
+var commitoptions = {
+   waitFlush: false ,
+   waitSearcher: false
+};
+			
 app.post('/', function(req, res){
 	
   console.log ('got the post from salesforce');
@@ -68,7 +74,6 @@ app.post('/', function(req, res){
 	console.log ('decode_sig : ' + decode_sig);
   */
 
-  
   res.render('index', {title: 'hello', signedreq : json_envelope});
 });
 
@@ -77,11 +82,16 @@ app.get('/go', function(req, res){
 });
 
 app.get('/account', function(req, res){
-	console.log ('searching for  : ' + req.query.str);
+	var sstr = req.query.txt,
+	    rows = req.query.rows;
+	    
+	console.log ('searching for  : ' + sstr + ', rows : ' + rows);
 	
 	var query = client.createQuery()
-		.q(req.query.str)
-		.fl(['id','name','type_s','phone_s','billingstate_s']);
+		.q(sstr)
+		.fl(['id','name','type_s','phone_s','billingstate_s'])
+		.facet({field: ['type_s']})
+		.rows(rows);
 	
 	client.search(query,function(err,obj){
 		if(err){
@@ -99,6 +109,8 @@ app.post('/account/:id', function(req, res){
 		if(err){
 			res.send(500, { error: 'something blew up' + err});
 		}else{
+
+			client.commit(commitoptions);
 			console.log ('Saving Document Success : ' + JSON.stringify(obj));
 			res.send(200);
 		}

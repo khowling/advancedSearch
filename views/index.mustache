@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html class="no-js" lang="en" ng-app="ngResource"> 
+<html class="no-js" lang="en" old-ng-app="ngResource" ng-app="app"> 
 
 
 <head>
@@ -12,56 +12,51 @@
   <script src="js/vendor/custom.modernizr.js"></script>
 
   <script type="text/javascript" src="https://emea.salesforce.com/canvas/sdk/js/29.0/canvas-all.js"></script>
-  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script>
-  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular-resource.js"></script>
-
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.7/angular.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.7/angular-resource.js"></script>
 </head>
+
 <body ng-controller="searchCtrl">
 
 	<div class="row">
 		<div class="large-8 columns">
-			<h2>Apache Solr / Salesforce Canvas App</h2>
-			<p>Push data from salesforce.com into Solr Collection running on heroku</p>
+			<h2>Search Salesforce Data with Solr</h2>
+			<p>Salesforce data indexed into Solr heroku app</p>
 			
-		</div>
-		<div class="large-4 columns">
-			<img src="http://lucene.apache.org/images/solr.png"/>
-			<a href="http://localhost:8983/solr/#/collection1">Manage Solr</a>
-		</div>
-		<hr />
-	</div>
-
-	<div class="row">
-		<div class="large-8 columns">
-			<h3>1. Update Solr with Latest Accounts (this can be automated)</h3>
-			 <!-- BUTTON ROW -->
-			  <div class="row collapse">
-			  	<button ng-click="getSFDCAccs()">Update Solr</button>
-			  	<small ng-show="showerror" ng-class="error">{errorStr}</small>
-			  </div>
-
-			<h3>2. Search you data with the power of Solr</h3>
+			<h3>Search salesforce data using Solr</h3>
 			<!-- Grid Example -->
 			<div class="row" >
 				<div class="large-12 columns">
 				
 					  <!-- SEARCH ROW -->
 					  <div class="row collapse">
-					    <div class="small-3 large-2 columns">
-					      <span class="prefix">search object</span>
-					    </div>
+					    
 					    <div class="small-9 large-10 columns">
-					      <input type="text" ng-model="search.txt" placeholder="Enter your Json...">
+					      <input style="height: 46px; font-size: 20px;" type="text" ng-model="searchparam.txt" placeholder="Search for...">
+					    </div>
+					    <div class="small-3 large-2 columns">
+					      <button ng-click="search(searchparam)">Search</button>
+					      <!-- <span class="prefix">search</span> -->
 					    </div>
 					  </div>
-					  
-					  <!-- BUTTON ROW -->
-					  <div class="row collapse">
-					  	<button ng-click="search(search)">Search</button>
-					  	<small ng-show="showerror" ng-class="error">{errorStr}</small>
-					  </div>
-					
-				</div>
+
+			
+				<!-- ***************** DATA RESULTS ***************-->
+				
+				<div class="row" ng-repeat="o1 in data.res">
+			        <div class="small-3 large-2 columns"><img src="http://placehold.it/80x80&amp;text=[img]"></div>
+			        <div class="small-9 large-10 columns">
+			          <p><strong>{[{o1.name}]}:</strong> {[{o1.type_s}]} {[{o1.phone_s}]} {[{o1.billingstate_s}]}</p>
+			          <ul class="inline-list" >
+			            <li><a ng-click="addRecord(o1)">Add</a></li>
+			            <li><a href="">Share</a></li>
+			          </ul>
+			        </div>
+			      </div>
+			      <hr/>
+				</div>	
+				
+				<!--
 				<div class="large-12 columns">
 					<table>
 					  <thead>
@@ -73,16 +68,66 @@
 					    </tr>
 					  </thead>
 					  <tbody  id="addrows">
-					    <tr ng-repeat="o1 in res1">
-					      <td><a ng-href="{{o1.id}}">{{o1.name}}</a></td>
-					      <td>{{o1.type_s}}</td>
-					      <td>{{o1.phone_s}}</td>
-					      <td>{{o1.billingstate_s}}</td>
+					    <tr ng-repeat="o1 in data.res">
+					      <td><a ng-href="{{o1.id}}">{[{o1.name}]}</a></td>
+					      <td>{[{o1.type_s}]}</td>
+					      <td>{[{o1.phone_s}]}</td>
+					      <td>{[{o1.billingstate_s}]}</td>
 					    </tr>
 					  </tbody>
 					</table>
 				</div>
+				-->
 			</div>
+			
+			
+		</div>
+		
+		<div class="large-4 columns">
+			
+			<a href="http://localhost:8983/solr/#/collection1"><img src="http://lucene.apache.org/images/solr.png"/></a>
+			
+			<div class="panel" style="margin-top: 15px;">
+				
+				<!-- ***************** FACET RESULTS ***************-->
+		         <p style="margin-bottom:0;">Filter by</p>
+		        <a href="#">all results ({[{data.totalrecords}]})</a>
+
+		        <span ng-repeat="(key1, fr) in data.facetresults">
+			      <p style="margin-bottom:0;">{[{key1}]}</p>
+			        
+			        <ul class="side-nav" ng-repeat="fieldfr in fr" style="line-height:1; padding:0;">
+				        <li><a ng-click="search(searchparam, { field: key1, val: fieldfr});">{[{fieldfr}]} ({[{fr[$index+1]}]})</a></li>
+				    </ul>
+				    <hr/>
+				</span>
+			 </div>
+			 
+			 <div class="panel" style="margin-top: 15px;">
+			
+				<!-- ***************** SELECTED RESULTS ***************-->
+		        <h5>Target List</h5>
+
+		        <ul class="side-nav" ng-repeat="sel in selected" style="line-height:1; padding:0;">
+			        <li><a href="#">{[{sel.name}]}</a></li>
+			    </ul>
+				<button ng-click="insertSFDC()">Create Campaign</button>
+			 </div>
+		</div>
+		<hr />
+	</div>
+
+	<div class="row">
+		<div class="large-8 columns">
+		
+			<h3>1. Update Solr with Latest Accounts (this can be automated)</h3>
+			 <!-- BUTTON ROW -->
+			  <div class="row collapse">
+			  	<button ng-click="getSFDCAccs()">Update Solr</button>
+			  	<small ng-show="showerror" ng-class="error">{errorStr}</small>
+			  </div>
+
+			
 			
 			<h3>Manually Add Data From any Other Systems</h3>
 			<!-- Grid Example -->
@@ -145,65 +190,63 @@
 		</div>
 	</div>
 
-  <script>
-  document.write('<script src=' +
-  ('__proto__' in {} ? 'js/vendor/zepto' : 'js/vendor/jquery') +
-  '.js><\/script>')
-  </script>
-  
-  <script src="js/foundation.min.js"></script>  
-  <script src="js/foundation/foundation.js"></script>
-  <script src="js/foundation/foundation.alerts.js"></script>
-  <script src="js/foundation/foundation.clearing.js"></script>
-  <script src="js/foundation/foundation.cookie.js"></script>
-  <script src="js/foundation/foundation.dropdown.js"></script>
-  <script src="js/foundation/foundation.forms.js"></script>
-  <script src="js/foundation/foundation.joyride.js"></script>
-  <script src="js/foundation/foundation.magellan.js"></script>
-  <script src="js/foundation/foundation.orbit.js"></script>
-  <script src="js/foundation/foundation.reveal.js"></script>
-  <script src="js/foundation/foundation.section.js"></script>
-  <script src="js/foundation/foundation.tooltips.js"></script>
-  <script src="js/foundation/foundation.topbar.js"></script>
-  <script src="js/foundation/foundation.interchange.js"></script>
-  <script src="js/foundation/foundation.placeholder.js"></script>
-  <script src="js/foundation/foundation.abide.js"></script>  
-  <script>
-    $(document).foundation();
-  </script>
-     <script>
+	<script>
    		/*  load the 'ngResource' module in your application by adding it as a dependent module 
    		 *  ngResource INCLUDED IN THE BOOTSTRAP INSTREAD 
    		angular.module('app', ['ngResource']);
    		*/
    		
+   		angular.module('app', ['ngResource']).config(function($interpolateProvider){
+	        $interpolateProvider.startSymbol('{[{').endSymbol('}]}');
+	    });
+   		
    		function searchCtrl( $resource, $scope) {
+   			var data = {};
+   			$scope.data = data;
+   			$scope.selected = [];
+   			
+   			$scope.addRecord = function(rec1) {
+   				$scope.selected.push(rec1);
+   			}
+   			
    			/* Initialisation */
 	   		$scope.Search = $resource('/account/:accId', {accId:'@id'}, 
 	   			{'saveall':  {method:'POST', isArray:true}});
 			$scope.showerror = false; 
 			
 			/* data/action bindings */
-			$scope.search = function (s) {
-				$("#addrows").empty();
-				var res = $scope.Search.query({str: s.txt}, 
+			$scope.search = function (s, f) {
+				if (s.rows == null) s.rows = 50;
+				console.log ('searching for  ' + JSON.stringify(s) + ', facet: ' + JSON.stringify(f));
+				var res = $scope.Search.query(s, 
+					/*Success */
 					function (value, responseHeaders){
 							
-						//	$scope.res1 = value[1].docs;
+						console.log('Response docs ' + JSON.stringify(value[1]));
+						console.log('Response facets ' + JSON.stringify(value[2]) );
 						
-						
-						for (var i = 0; i < value[1].numFound; i++) {
-							var record1 = value[1].docs[i];
-							$("#addrows").append("<tr><td><a href='https://emea.salesforce.com/"+record1.id+"'>"+record1.name+"</a></td><td>"+record1.type_s+"</td><td>"+record1.phone_s+"</td><td>"+record1.billingstate_s+"</td></tr>");	
+						// Results
+						if (value[1] != null) {
+							data.res = value[1].docs;
 						}
 						
+						// Facet
+						console.log('found docs ' + value[1].numFound + ' documents');
+						data.totalrecords = value[1].numFound
+						if (value[2] != null) {
+							data.facetresults = value[2].facet_fields;
+						}
+
+						
 					}, 
+					/* Error */
 					function (httpResponse) {
 					 	$scope.errorStr = 'Error ' + JSON.stringify( httpResponse);
 					 	$scope.showerror = true;
 					 	alert ($scope.errorStr);
 					 } );
 			}
+			
 			
 			/* data/action bindings */
 			$scope.add = function (s) {
@@ -254,8 +297,39 @@
 					    }
 					}});
 				}
-			} catch (e) { alert ('no Signed Request'); }
+			} catch (e) { console.log ('no Signed Request'); }
+			$scope.search ({txt: '*', rows: 0});
 		}
-   </script>
+	</script>
+
+  <script>
+  
+  document.write('<script src=' +
+  ('__proto__' in {} ? 'js/vendor/zepto' : 'js/vendor/jquery') +
+  '.js><\/script>')
+  
+  </script>
+  
+  <script src="js/foundation.min.js"></script>  
+  <script src="js/foundation/foundation.js"></script>
+  <script src="js/foundation/foundation.alerts.js"></script>
+  <script src="js/foundation/foundation.clearing.js"></script>
+  <script src="js/foundation/foundation.cookie.js"></script>
+  <script src="js/foundation/foundation.dropdown.js"></script>
+  <script src="js/foundation/foundation.forms.js"></script>
+  <script src="js/foundation/foundation.joyride.js"></script>
+  <script src="js/foundation/foundation.magellan.js"></script>
+  <script src="js/foundation/foundation.orbit.js"></script>
+  <script src="js/foundation/foundation.reveal.js"></script>
+  <script src="js/foundation/foundation.section.js"></script>
+  <script src="js/foundation/foundation.tooltips.js"></script>
+  <script src="js/foundation/foundation.topbar.js"></script>
+  <script src="js/foundation/foundation.interchange.js"></script>
+  <script src="js/foundation/foundation.placeholder.js"></script>
+  <script src="js/foundation/foundation.abide.js"></script>  
+  <script>
+    $(document).foundation();
+  </script>
+
 </body>
 </html>
