@@ -28,11 +28,17 @@
 
 
     <field name="id" stored="true" type="string" multiValued="false" indexed="true" required="true" />
-    <field name="name"  type="string" multiValued="false"  indexed="true"  stored="true"/>
-    <field name="type_s"  type="string" multiValued="false"  indexed="true"  stored="true"/>
-    <field name="phone_s"  type="string" multiValued="false"  indexed="true"  stored="true"/>
-    <field name="billingstate_s"  type="string" multiValued="false"  indexed="true"  stored="true"/>
-	
+    <field name="Name_s"  type="string" multiValued="false"  indexed="true"  stored="true"/>
+    <field name="Title_s"  type="string" multiValued="false"  indexed="true"  stored="true"/>
+    <field name="Codes_ss"  type="string" multiValued="true"  indexed="true"  stored="true"/>
+    <field name="CV_Details_s"  type="string" multiValued="false"  indexed="true"  stored="true"/>
+    <field name="MailingStreet_s"  type="string" multiValued="false"  indexed="true"  stored="true"/>
+    <field name="MailingCity_s"  type="string" multiValued="false"  indexed="true"  stored="true"/>
+    <field name="MailingState_s"  type="string" multiValued="false"  indexed="true"  stored="true"/>	
+    <field name="MailingPostalCode_s"  type="string" multiValued="false"  indexed="true"  stored="true"/>
+    <field name="Phone_s"  type="string" multiValued="false"  indexed="true"  stored="true"/>
+    <field name="Email_s"  type="string" multiValued="false"  indexed="true"  stored="true"/>
+
 
     <field name="class_name" stored="false" type="string" multiValued="false" indexed="true"/>
     <field name="text" stored="false" type="string" multiValued="true" indexed="true"/>
@@ -45,7 +51,7 @@
 
   <!-- field for the QueryParser to use when an explicit fieldname is absent -->
 
-  <defaultSearchField>name</defaultSearchField>
+  <defaultSearchField>Name_s</defaultSearchField>
 
   <!-- SolrQueryParser configuration: defaultOperator="AND|OR" -->
   <solrQueryParser defaultOperator="AND"/>

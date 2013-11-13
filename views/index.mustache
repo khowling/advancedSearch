@@ -16,6 +16,9 @@
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.7/angular-resource.js"></script>
 </head>
 
+<style>
+body { font-size: 80%; }
+</style>
 <body ng-controller="searchCtrl">
 
 	<div class="row">
@@ -32,7 +35,7 @@
 					  <div class="row collapse">
 					    
 					    <div class="small-9 large-10 columns">
-					      <input style="height: 46px; font-size: 20px;" type="text" ng-model="searchparam.txt" placeholder="Search for...">
+					      <input style=" font-size: 1.250em;" type="text" ng-model="searchparam.txt" placeholder="Search for...">
 					    </div>
 					    <div class="small-3 large-2 columns">
 					      <button ng-click="search(searchparam)">Search</button>
@@ -44,40 +47,30 @@
 				<!-- ***************** DATA RESULTS ***************-->
 				
 				<div class="row" ng-repeat="o1 in data.res">
-			        <div class="small-3 large-2 columns"><img src="http://placehold.it/80x80&amp;text=[img]"></div>
-			        <div class="small-9 large-10 columns">
-			          <p><strong>{[{o1.name}]}:</strong> {[{o1.type_s}]} {[{o1.phone_s}]} {[{o1.billingstate_s}]}</p>
+					<hr style="margin: 2px;"/>
+			        <div class="small-2 large-2 columns"><img src="https://c.eu0.content.force.com/profilephoto/005/T"></div>
+			        <div class="small-10 large-10 columns" >
+			          <p style="margin-left: -1.375em;"><strong>{[{o1.Name_s}]}:</strong> {[{o1.Title_s}]}</p>
+			          <div style="margin-left: -1.375em;">{[{CV_Details_s}]}</div>
+			          
 			          <ul class="inline-list" >
-			            <li><a ng-click="addRecord(o1)">Add</a></li>
-			            <li><a href="">Share</a></li>
+			          	<li ng-repeat="skill in o1.Codes_ss" style="margin-left: 2px;">
+			          		<span class="radius success label">{[{skill}]}</span>
+			          	</li>
+			          </ul>
+			          
+			          <div style="margin-left: -1.375em;">{[{o1.MailingStreet_s}]} {[{o1.MailingCity_s}]} {[{o1.MailingState_s}]} {[{o1.MailingPostalCode_s}]}</div>
+			          <ul class="inline-list" >
+			            <li style="margin-left: 0px;"><a>{[{o1.Phone_s}]}</a></li>
+			            <li><a>{[{o1.Email_s}]}</a></li>
+			            <li><a class="tiny button" ng-click="addRecord(o1)">Add</a></li>
+			            
 			          </ul>
 			        </div>
 			      </div>
-			      <hr/>
+			      
 				</div>	
-				
-				<!--
-				<div class="large-12 columns">
-					<table>
-					  <thead>
-					    <tr>
-					      <th width="200">Name</th>
-					      <th>Type</th>
-					      <th width="150">Phone</th>
-					      <th width="150">Billing State</th>
-					    </tr>
-					  </thead>
-					  <tbody  id="addrows">
-					    <tr ng-repeat="o1 in data.res">
-					      <td><a ng-href="{{o1.id}}">{[{o1.name}]}</a></td>
-					      <td>{[{o1.type_s}]}</td>
-					      <td>{[{o1.phone_s}]}</td>
-					      <td>{[{o1.billingstate_s}]}</td>
-					    </tr>
-					  </tbody>
-					</table>
-				</div>
-				-->
+
 			</div>
 			
 			
@@ -89,10 +82,11 @@
 			
 			<div class="panel" style="margin-top: 15px;">
 				
+				<h5>Filters</h5>
 				<!-- ***************** FILTERS SET ***************-->
-		        <p style="margin-bottom:0;">Filter by:  ({[{data.totalrecords}]})</p>
+		        <p style="margin-bottom:0;">({[{data.totalrecords}]}) results</p>
 		        
-		        <div ng-repeat="filt in setfilters"><a class="label round alert" style="margin: 2px;" ng-click="rmFilter($index);  search(searchparam);">{[{filt.val}]}</a></div>
+		        <div ng-repeat="filt in setfilters"><a class="label round alert" style="margin: 2px;" ng-click="rmFilter($index);  search(searchparam);">{[{filt.field}]}: {[{filt.val}]}</a></div>
 		        
 
 				<!-- ***************** FACET RESULTS ***************-->
@@ -112,7 +106,7 @@
 		        <h5>Target List</h5>
 
 		        <ul class="side-nav" ng-repeat="sel in selected" style="line-height:1; padding:0;">
-			        <li><a href="#">{[{sel.name}]}</a></li>
+			        <li><a ng-click="rmSelected($index);">{[{sel.Name_s}]}</a></li>
 			    </ul>
 				<button ng-click="insertSFDC()">Create Campaign</button>
 			 </div>
@@ -219,7 +213,12 @@
    			}
    			
    			$scope.addRecord = function(rec1) {
+   				console.log ('addRecord ' + JSON.stringify(rec1)); 
    				$scope.selected.push(rec1);
+   			}
+   			$scope.rmSelected = function(idx) {
+   				console.log ('rmSelected ' + idx);  			
+   				$scope.selected.splice( $scope.selected[idx] ,1);
    			}
    			
    			/* Initialisation */
@@ -285,29 +284,39 @@
 			try {
 				var sr = JSON.parse('{{{ signedreq }}}');
 				// Reference the Chatter user's URL from Context.Links object.
-				var chatterUsersUrl = sr.context.links.queryUrl + '?q=SELECT+id,name,type,billingstate,phone+from+Account';
-				console.log (chatterUsersUrl);
+				var queryContactsUrl = sr.context.links.queryUrl + '?q=SELECT+id,name,title,email,phone,MailingStreet,MailingCity,Codes__c,MailingPostalCode,MailingState+from+Contact';
+				console.log (queryContactsUrl);
 				$scope.getSFDCAccs = function() {
 					// Make an XHR call back to salesforce through the supplied browser proxy. 
-					Sfdc.canvas.client.ajax(chatterUsersUrl, 
+					Sfdc.canvas.client.ajax(queryContactsUrl, 
 					    {client : sr.client,
 					    success : function(data){
 					    // Make sure the status code is OK.
 					    if (data.status === 200) {
 					        
 					        console.log ("Updating  "  + data.payload.totalSize + 
-					        " Accounts into Solr"); // Returned 2 users
+					        " Contacts into Solr"); // Returned 2 users
 					        
 					        var pushtosolr = new Array();
 					        for (var i = 0; i < data.payload.totalSize; i++) {
 					        	var sfdcobj = data.payload.records[i];
 					        	console.log (JSON.stringify (sfdcobj));
+					        	var code_json = [];
+					        	if (sfdcobj.Codes__c != null) {
+					        		code_json = sfdcobj.Codes__c.split(',');
+					        	}
 					        	var solrobj = {
 						        	'id': sfdcobj.Id,
-						        	'name' : sfdcobj.Name,
-						        	'type_s' : sfdcobj.Type,
-						        	'billingstate_s': sfdcobj.BillingState,
-						        	'phone_s': sfdcobj.Phone};
+						        	'Name_s' : sfdcobj.Name,
+						        	'Title_s': sfdcobj.Title,
+						        	'Codes_ss' : code_json,
+						        	'CV_Details_s' : sfdcobj.CV_Details__c,
+						        	'MailingStreet_s': sfdcobj.MailingStreet,
+						        	'MailingCity_s': sfdcobj.MailingCity,
+						        	'MailingState_s': sfdcobj.MailingState,
+						        	'MailingPostalCode_s': sfdcobj.MailingPostalCode,
+						        	'Phone_s': sfdcobj.Phone,
+						        	'Email_s': sfdcobj.Email};
 				        		pushtosolr.push (solrobj);
 					        }
 					        $scope.add(pushtosolr);

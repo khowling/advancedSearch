@@ -90,9 +90,12 @@ app.get('/account', function(req, res){
 	
 	var query = client.createQuery()
 		.q(sstr)
-		.fl(['id','name','type_s','phone_s','billingstate_s'])
-		.facet({field: ['type_s']})
+		.qf({Name_s: 3, Codes__ss: 3, Title_s: 3, CV_Details_s: 3, Phone_s: 0, Email_s: 0})
+		.fl('*')
+		.edismax()
+		.facet({field: ['Codes_ss', 'MailingState_s']})
 		.rows(rows);
+		
 	
 	if (filters != null) {
 		var filts = JSON.parse(filters);
