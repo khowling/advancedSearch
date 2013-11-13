@@ -229,7 +229,7 @@ body { font-size: 80%; }
 			/* data/action bindings */
 			$scope.search = function (s) {
 				if (s == null) s = {};
-				if (s.txt == null) s.txt = "*";
+				if (s.txt == null || s.txt == '') s.txt = "*";
 				if (s.rows == null) s.rows = 50;
 				//if (f != null) s.filters = JSON.stringify(f);
 				s.filters = JSON.stringify($scope.setfilters);

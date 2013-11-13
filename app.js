@@ -90,13 +90,15 @@ app.get('/account', function(req, res){
 	
 	var query = client.createQuery()
 		.q(sstr)
-		.qf({Name_s: 3, Codes__ss: 3, Title_s: 3, CV_Details_s: 3, Phone_s: 0, Email_s: 0})
-		.fl('*')
 		.edismax()
+		//.qf({Name_s:1,Codes__ss:1,Title_s:1,CV_Details_s:0.5,Phone_s:0.5,Email_s:0.5})
+		.qf({Name_s:1,Title_s:1})
+		.fl('*')
 		.facet({field: ['Codes_ss', 'MailingState_s']})
-		.rows(rows);
+		.rows(rows)
+		.set('lowercaseOperators=true');
 		
-	
+
 	if (filters != null) {
 		var filts = JSON.parse(filters);
 		for (var idx =0; idx < filts.length; idx++) {
