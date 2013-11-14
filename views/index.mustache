@@ -23,14 +23,16 @@ body { font-size: 80%; }
 
 	<div class="row">
 		<div class="large-8 columns">
+		<!--
 			<h2>Search Salesforce Data with Solr</h2>
 			<p>Salesforce data indexed into Solr heroku app</p>
 			
-			<h3>Search salesforce data using Solr</h3>
+			
+			
 			<!-- Grid Example -->
 			<div class="row" >
 				<div class="large-12 columns">
-				
+						<h3>Search Candidates</h3>	
 					  <!-- SEARCH ROW -->
 					  <div class="row collapse">
 					    
@@ -48,9 +50,9 @@ body { font-size: 80%; }
 				
 				<div class="row" ng-repeat="o1 in data.res">
 					<hr style="margin: 2px;"/>
-			        <div class="small-2 large-2 columns"><img src="https://c.eu0.content.force.com/profilephoto/005/T"></div>
+			        <div class="small-2 large-2 columns"><img ng-src="{[{instanceUrl}]}/profilephoto/005/T"></div>
 			        <div class="small-10 large-10 columns" >
-			          <p style="margin-left: -1.375em;"><strong>{[{o1.Name_s}]}:</strong> {[{o1.Title_s}]}</p>
+			          <p style="margin-left: -1.375em;"><strong><a target="_top" href="{[{instanceUrl}]}/{[{o1.id}]}">{[{o1.Name_s}]}</a>:</strong> {[{o1.Title_s}]}</p>
 			          <div style="margin-left: -1.375em;">{[{CV_Details_s}]}</div>
 			          
 			          <ul class="inline-list" >
@@ -117,7 +119,7 @@ body { font-size: 80%; }
 	<div class="row">
 		<div class="large-8 columns">
 		
-			<h3>1. Update Solr with Latest Accounts (this can be automated)</h3>
+			<h3>ADMIN ONLY. Update Solr with Latest Accounts</h3>
 			 <!-- BUTTON ROW -->
 			  <div class="row collapse">
 			  	<button ng-click="getSFDCAccs()">Update Solr</button>
@@ -125,13 +127,14 @@ body { font-size: 80%; }
 			  </div>
 
 			
-			
+			<!--
 			<h3>Manually Add Data From any Other Systems</h3>
-			<!-- Grid Example -->
+			
+
 			<div class="row">
 				<div class="large-12 columns">
 									  
-					  <!-- ADD ROW -->
+					
 					  <div class="row">
 					    <div class="large-6 columns">
 					      <div class="row collapse">
@@ -175,7 +178,7 @@ body { font-size: 80%; }
 					    </div>
 					  </div>
 					  
-					  <!-- BUTTON ROW -->
+					
 					  <div class="row collapse">
 					  	<button ng-click="add(acc)">Add</button>
 					  	
@@ -184,6 +187,9 @@ body { font-size: 80%; }
 				
 				</div>
 			</div>
+			
+			-->
+			
 		</div>
 	</div>
 
@@ -285,13 +291,16 @@ body { font-size: 80%; }
 				var sr = JSON.parse('{{{ signedreq }}}');
 				// Reference the Chatter user's URL from Context.Links object.
 				var queryContactsUrl = sr.context.links.queryUrl + '?q=SELECT+id,name,title,email,phone,MailingStreet,MailingCity,Codes__c,MailingPostalCode,MailingState+from+Contact';
-				console.log (queryContactsUrl);
+				console.log (JSON.stringify(sr));
+				$scope.instanceUrl = sr.client.instanceUrl;
 				$scope.getSFDCAccs = function() {
 					// Make an XHR call back to salesforce through the supplied browser proxy. 
+					console.log('call salesforce: ' + queryContactsUrl);
 					Sfdc.canvas.client.ajax(queryContactsUrl, 
 					    {client : sr.client,
 					    success : function(data){
 					    // Make sure the status code is OK.
+					    console.log ("response  "   + JSON.stringify(data));
 					    if (data.status === 200) {
 					        
 					        console.log ("Updating  "  + data.payload.totalSize + 
@@ -302,9 +311,16 @@ body { font-size: 80%; }
 					        	var sfdcobj = data.payload.records[i];
 					        	console.log (JSON.stringify (sfdcobj));
 					        	var code_json = [];
+					        	//if (sfdcobj.Codes__c != null) {
+					        	//	code_json = sfdcobj.Codes__c.split(',');
+					        	//}
 					        	if (sfdcobj.Codes__c != null) {
-					        		code_json = sfdcobj.Codes__c.split(',');
+					        		sfdcobj.Codes__c.split(',').forEach(function(c, i) {
+					        			code_json.push (c.trim());
+					        		});
 					        	}
+					        	
+					        	
 					        	var solrobj = {
 						        	'id': sfdcobj.Id,
 						        	'Name_s' : sfdcobj.Name,
@@ -324,7 +340,7 @@ body { font-size: 80%; }
 					}});
 				}
 			} catch (e) { console.log ('no Signed Request'); }
-			$scope.search ({txt: '*', rows: 0});
+			$scope.search ({txt: '', rows: 0});
 		}
 	</script>
 

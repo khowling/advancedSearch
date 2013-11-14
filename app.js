@@ -88,6 +88,9 @@ app.get('/account', function(req, res){
 	    
 	console.log ('searching for  : ' + sstr + ', rows : ' + rows + ', filters : ' + JSON.stringify(filters));
 	
+	if (sstr == null || sstr == '') sstr = '*'; 
+	else if (sstr.indexOf('*', sstr.length - 1) === -1) sstr = sstr + '*'; 
+	
 	var query = client.createQuery()
 		.q(sstr)
 		.edismax()
@@ -103,7 +106,7 @@ app.get('/account', function(req, res){
 		var filts = JSON.parse(filters);
 		for (var idx =0; idx < filts.length; idx++) {
 			console.log ('adding filter ' + filts[idx].field + ' : ' +  filts[idx].val);
-			query.matchFilter(filts[idx].field, filts[idx].val);
+			query.matchFilter(filts[idx].field, '"'+filts[idx].val+'"');
 		}
 	}
 	
