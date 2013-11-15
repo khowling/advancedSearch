@@ -84,9 +84,7 @@ body { font-size: 80%; }
 			
 			<div class="panel" style="margin-top: 15px;">
 				
-				<h5>Filters</h5>
-				<!-- ***************** FILTERS SET ***************-->
-		        <p style="margin-bottom:0;">({[{data.totalrecords}]}) results</p>
+				<h6><strong>Filters</strong> ({[{data.totalrecords}]}) results</p></h6>
 		        
 		        <div ng-repeat="filt in setfilters"><a class="label round alert" style="margin: 2px;" ng-click="rmFilter($index);  search(searchparam);">{[{filt.field}]}: {[{filt.val}]}</a></div>
 		        
@@ -316,7 +314,8 @@ body { font-size: 80%; }
 					        	//}
 					        	if (sfdcobj.Codes__c != null) {
 					        		sfdcobj.Codes__c.split(',').forEach(function(c, i) {
-					        			code_json.push (c.trim());
+					        			var v1 = c.trim();
+					        			if (v1 != '') code_json.push (v1);
 					        		});
 					        	}
 					        	
